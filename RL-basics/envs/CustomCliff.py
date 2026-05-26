@@ -361,6 +361,3 @@ class CliffWalkingEnv(Env):
 
 # Elf and stool from https://franuka.itch.io/rpg-snow-tileset
 # All other assets by ____
-
-def test():
-    print("OK")
