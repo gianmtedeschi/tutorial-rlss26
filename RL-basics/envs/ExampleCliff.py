@@ -1,5 +1,4 @@
 import numpy as np
-
 from gymnasium import Env
 
 class CliffWalkingEnv(Env):
@@ -53,3 +52,9 @@ class CliffWalkingEnv(Env):
 
         return self.state, reward, terminated, truncated, {}
 
+class RandomPolicy(Policy):
+    def __init__(self, action_space):
+        self.action_space = action_space
+
+    def get_action(self, state):
+        return np.random.randint(0, self.action_space)
