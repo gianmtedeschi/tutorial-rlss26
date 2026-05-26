@@ -127,7 +127,9 @@ class CliffWalkingEnv(Env):
         # self.initial_state_distrib = np.zeros(self.nS)
         # self.initial_state_distrib[self.start_state_index] = 1.0
 
-        self.initial_state_distrib = np.ones(self.nS) / self.nS
+        self.initial_state_distrib = np.ones(self.nS) / 37
+        for i in range(1, 12):
+            self.initial_state_distrib[np.ravel_multi_index((3, i), self.shape)] = 0.
 
         self.observation_space = spaces.Discrete(self.nS)
         self.action_space = spaces.Discrete(self.nA)
