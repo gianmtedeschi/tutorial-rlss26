@@ -133,7 +133,7 @@ class CliffWalkingEnv(Env):
 
         # self.observation_space = spaces.Discrete(self.nS)
         self.action_space = spaces.Discrete(self.nA)
-        self.observation_space = spaces.Box(shape=(2,), low=0, high=self.nA, dtype=np.int32)
+        self.observation_space = spaces.Box(shape=(2,), low=np.array([0, 0], dtype=np.int32), high=np.array([3, 11], dtype=np.int32), dtype=np.int32)
 
         self.render_mode = render_mode
 
