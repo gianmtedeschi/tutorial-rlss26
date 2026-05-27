@@ -2,6 +2,6 @@ from gymnasium.envs.registration import register
 
 def setup():
     register(
-        id="Cliff-v0",
+        id="CliffWalking-RLSS-v0",
         entry_point="envs.CustomCliff:CliffWalkingEn",
     )
