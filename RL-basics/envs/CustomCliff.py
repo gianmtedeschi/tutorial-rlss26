@@ -262,29 +262,29 @@ class CliffWalkingEnv(Env):
             self.clock = pygame.time.Clock()
         if self.elf_images is None:
             hikers = [
-                path.join(path.dirname(__file__), "img/elf_up.png"),
-                path.join(path.dirname(__file__), "img/elf_right.png"),
-                path.join(path.dirname(__file__), "img/elf_down.png"),
-                path.join(path.dirname(__file__), "img/elf_left.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/elf_up.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/elf_right.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/elf_down.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/elf_left.png"),
             ]
             self.elf_images = [
                 pygame.transform.scale(pygame.image.load(f_name), self.cell_size)
                 for f_name in hikers
             ]
         if self.start_img is None:
-            file_name = path.join(path.dirname(__file__), "img/stool.png")
+            file_name = path.join(path.dirname(__file__), "img/custom_cliff/stool.png")
             self.start_img = pygame.transform.scale(
                 pygame.image.load(file_name), self.cell_size
             )
         if self.goal_img is None:
-            file_name = path.join(path.dirname(__file__), "img/cookie.png")
+            file_name = path.join(path.dirname(__file__), "img/custom_cliff/cookie.png")
             self.goal_img = pygame.transform.scale(
                 pygame.image.load(file_name), self.cell_size
             )
         if self.mountain_bg_img is None:
             bg_imgs = [
-                path.join(path.dirname(__file__), "img/mountain_bg1.png"),
-                path.join(path.dirname(__file__), "img/mountain_bg2.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/mountain_bg1.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/mountain_bg2.png"),
             ]
             self.mountain_bg_img = [
                 pygame.transform.scale(pygame.image.load(f_name), self.cell_size)
@@ -292,15 +292,15 @@ class CliffWalkingEnv(Env):
             ]
         if self.near_cliff_img is None:
             near_cliff_imgs = [
-                path.join(path.dirname(__file__), "img/mountain_near-cliff1.png"),
-                path.join(path.dirname(__file__), "img/mountain_near-cliff2.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/mountain_near-cliff1.png"),
+                path.join(path.dirname(__file__), "img/custom_cliff/mountain_near-cliff2.png"),
             ]
             self.near_cliff_img = [
                 pygame.transform.scale(pygame.image.load(f_name), self.cell_size)
                 for f_name in near_cliff_imgs
             ]
         if self.cliff_img is None:
-            file_name = path.join(path.dirname(__file__), "img/mountain_cliff.png")
+            file_name = path.join(path.dirname(__file__), "img/custom_cliff/mountain_cliff.png")
             self.cliff_img = pygame.transform.scale(
                 pygame.image.load(file_name), self.cell_size
             )
