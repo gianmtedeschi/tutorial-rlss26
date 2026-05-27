@@ -219,6 +219,9 @@ class CliffWalkingEnv(Env):
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
         self.s = categorical_sample(self.initial_state_distrib, self.np_random)
+
+        self.start_state_index = self.s
+
         self.lastaction = None
 
         self.counter = 0
