@@ -204,15 +204,23 @@ class CliffWalkingEnv(Env):
         self.s = s
         self.lastaction = a
 
+        self.counter += 1
+        truncated = True if self.counter >= 500 else False
+
+        if r == -100:
+            t = True
+
         if self.render_mode == "human":
             self.render()
         # truncation=False as the time limit is handled by the `TimeLimit` wrapper added during `make`
-        return self._state_to_xy(int(s)), r, t, False, {"prob": p}
+        return self._state_to_xy(int(s)), r, t, truncated, {"prob": p}
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
         self.s = categorical_sample(self.initial_state_distrib, self.np_random)
         self.lastaction = None
+
+        self.counter = 0
 
         if self.render_mode == "human":
             self.render()

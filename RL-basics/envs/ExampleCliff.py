@@ -34,20 +34,13 @@ class CliffWalkingEnv(Env):
 
         self.interactions += 1
 
-        terminated = tuple(self.state) == self.GOAL
+        terminated = True if tuple(self.state) == self.GOAL else False
         truncated = self.interactions >= 500
 
         reward = -100 if tuple(self.state) in self.CLIFF else -1
 
-        # if fall off the cliff resample the state
+        # if fall off the cliff terminate the episode
         if reward == -100:
-            valid_states = [
-                (r, c)
-                for r in range(self.ROWS)
-                for c in range(self.COLS)
-                if (r, c) not in self.CLIFF and (r, c) != self.GOAL
-            ]
-            state = valid_states[np.random.randint(len(valid_states))]
-            self.state = np.array(state, dtype=np.int32)
+           terminated = True
 
         return self.state, reward, terminated, truncated, {}
