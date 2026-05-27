@@ -131,8 +131,9 @@ class CliffWalkingEnv(Env):
         for i in range(1, 12):
             self.initial_state_distrib[np.ravel_multi_index((3, i), self.shape)] = 0.
 
-        self.observation_space = spaces.Discrete(self.nS)
+        # self.observation_space = spaces.Discrete(self.nS)
         self.action_space = spaces.Discrete(self.nA)
+        self.observation_space = spaces.Box(shape=(2,), low=0, high=self.nA)
 
         self.render_mode = render_mode
 
@@ -162,7 +163,7 @@ class CliffWalkingEnv(Env):
 
     def _state_to_xy(self, s: int) -> np.ndarray:
         col, row = np.unravel_index(s, self.shape)
-        return np.array([col, row], dtype=np.int64)
+        return np.array([col, row], dtype=np.int32)
 
     def _calculate_transition_prob(
         self, current: list[int] | np.ndarray, move: int
