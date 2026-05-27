@@ -51,10 +51,3 @@ class CliffWalkingEnv(Env):
             self.state = np.array(state, dtype=np.int32)
 
         return self.state, reward, terminated, truncated, {}
-
-class RandomPolicy(Policy):
-    def __init__(self, action_space):
-        self.action_space = action_space
-
-    def get_action(self, state):
-        return np.random.randint(0, self.action_space)
