@@ -1,6 +1,11 @@
 import numpy as np
 from gymnasium import Env
 
+UP    = 0
+RIGHT = 1
+DOWN  = 2
+LEFT  = 3
+
 class CliffWalkingEnv(Env):
     ROWS = 4
     COLS = 12
@@ -14,47 +19,33 @@ class CliffWalkingEnv(Env):
             for c in range(self.COLS)
             if (r, c) not in self.CLIFF and (r, c) != self.GOAL
         ]
-        # uniformly sample the initial state
+        # Sample uniformly the initial state
         state = valid_states[np.random.randint(len(valid_states))]
         self.state = np.array(state, dtype=np.int32)
-        # count the number of interactions
+        # Count the number of interactions
         self.interactions = 0
         return self.state, {}
 
     def step(self, action: int):
-        # if possible perform the action
-        if action == 0 and self.state[0] > 0:
+        # If possible perform the action
+        if action == UP and self.state[0] > 0:
             self.state = self.state + np.array([-1, 0], dtype=np.int32)
-        elif action == 1 and self.state[1] < self.COLS - 1:
+        elif action == RIGHT and self.state[1] < self.COLS - 1:
             self.state = self.state + np.array([0, 1], dtype=np.int32)
-        elif action == 2 and self.state[0] < self.ROWS - 1:
+        elif action == DOWN and self.state[0] < self.ROWS - 1:
             self.state = self.state + np.array([1, 0], dtype=np.int32)
-        elif action == 3 and self.state[1] > 0:
+        elif action == LEFT and self.state[1] > 0:
             self.state = self.state + np.array([0, -1], dtype=np.int32)
 
         self.interactions += 1
 
-        terminated = tuple(self.state) == self.GOAL
+        terminated = True if tuple(self.state) == self.GOAL else False
         truncated = self.interactions >= 500
 
         reward = -100 if tuple(self.state) in self.CLIFF else -1
 
-        # if fall off the cliff resample the state
+        # When the agent falls off the cliff, terminate the episode
         if reward == -100:
-            valid_states = [
-                (r, c)
-                for r in range(self.ROWS)
-                for c in range(self.COLS)
-                if (r, c) not in self.CLIFF and (r, c) != self.GOAL
-            ]
-            state = valid_states[np.random.randint(len(valid_states))]
-            self.state = np.array(state, dtype=np.int32)
+           terminated = True
 
         return self.state, reward, terminated, truncated, {}
-
-class RandomPolicy(Policy):
-    def __init__(self, action_space):
-        self.action_space = action_space
-
-    def get_action(self, state):
-        return np.random.randint(0, self.action_space)
