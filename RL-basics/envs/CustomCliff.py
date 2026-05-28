@@ -206,7 +206,7 @@ class CliffWalkingEnv(Env):
         self.lastaction = a
 
         self.counter += 1
-        truncated = True if self.counter >= 500 else False
+        truncated = True if self.counter >= 50 else False
 
         if r == -100:
             t = True

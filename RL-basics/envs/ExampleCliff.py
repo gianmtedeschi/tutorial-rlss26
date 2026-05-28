@@ -35,7 +35,7 @@ class CliffWalkingEnv(Env):
         self.interactions += 1
 
         terminated = True if tuple(self.state) == self.GOAL else False
-        truncated = self.interactions >= 500
+        truncated = self.interactions >= 50
 
         reward = -100 if tuple(self.state) in self.CLIFF else -1
 
