@@ -1,0 +1,6 @@
+gymnasium[toy-text]
+matplotlib
+ipython
+numpy
+jupyter
+tqdm

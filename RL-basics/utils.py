@@ -53,16 +53,12 @@ def animate_frames(frames, interval=200):
     )
 
     plt.close(fig)
-    display(HTML(ani.to_jshtml(default_mode='loop')))
+    display(HTML('<center>' + ani.to_jshtml(default_mode='loop') + '</center>'))
 
-def plot_cumulative_reward(mean_cumulative_rewards: list, std_cumulative_rewards: list, n_runs: int):
+def plot_cumulative_reward(mean_cumulative_rewards: list, margin_of_error: list):
     # Convert to numpy arrays for element-wise math operations
     mean_cumulative_rewards = np.array(mean_cumulative_rewards)
     std_cumulative_rewards = np.array(std_cumulative_rewards)
-
-    # Calculate the 95% Confidence Interval margin of error
-    # Formula: 1.96 * (Standard Deviation / sqrt(N))
-    margin_of_error = 1.96 * (std_cumulative_rewards / np.sqrt(n_runs))
 
     plt.figure(figsize=(10, 6))
     episodes = range(len(mean_cumulative_rewards))
