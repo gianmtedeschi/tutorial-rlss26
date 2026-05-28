@@ -10,10 +10,10 @@ from gymnasium import Env, spaces
 from gymnasium.envs.toy_text.utils import categorical_sample
 from gymnasium.error import DependencyNotInstalled
 
-UP    = 0
+UP = 0
 RIGHT = 1
-DOWN  = 2
-LEFT  = 3
+DOWN = 2
+LEFT = 3
 
 POSITION_MAPPING = {UP: [-1, 0], RIGHT: [0, 1], DOWN: [1, 0], LEFT: [0, -1]}
 
@@ -131,8 +131,9 @@ class CliffWalkingEnv(Env):
         for i in range(1, 12):
             self.initial_state_distrib[np.ravel_multi_index((3, i), self.shape)] = 0.
 
-        self.observation_space = spaces.Discrete(self.nS)
+        # self.observation_space = spaces.Discrete(self.nS)
         self.action_space = spaces.Discrete(self.nA)
+        self.observation_space = spaces.Box(shape=(2,), low=np.array([0, 0], dtype=np.int32), high=np.array([3, 11], dtype=np.int32), dtype=np.int32)
 
         self.render_mode = render_mode
 
@@ -162,7 +163,7 @@ class CliffWalkingEnv(Env):
 
     def _state_to_xy(self, s: int) -> np.ndarray:
         col, row = np.unravel_index(s, self.shape)
-        return np.array([col, row], dtype=np.int64)
+        return np.array([col, row], dtype=np.int32)
 
     def _calculate_transition_prob(
         self, current: list[int] | np.ndarray, move: int
@@ -204,15 +205,26 @@ class CliffWalkingEnv(Env):
         self.s = s
         self.lastaction = a
 
+        self.counter += 1
+        truncated = True if self.counter >= 50 else False
+
+        if r == -100:
+            t = True
+
         if self.render_mode == "human":
             self.render()
         # truncation=False as the time limit is handled by the `TimeLimit` wrapper added during `make`
-        return self._state_to_xy(int(s)), r, t, False, {"prob": p}
+        return self._state_to_xy(int(s)), r, t, truncated, {"prob": p}
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
         self.s = categorical_sample(self.initial_state_distrib, self.np_random)
+
+        self.start_state_index = self.s
+
         self.lastaction = None
+
+        self.counter = 0
 
         if self.render_mode == "human":
             self.render()
@@ -253,29 +265,29 @@ class CliffWalkingEnv(Env):
             self.clock = pygame.time.Clock()
         if self.elf_images is None:
             hikers = [
-                path.join(path.dirname(__file__), "img/elf_up.png"),
-                path.join(path.dirname(__file__), "img/elf_right.png"),
-                path.join(path.dirname(__file__), "img/elf_down.png"),
-                path.join(path.dirname(__file__), "img/elf_left.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/elf_up.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/elf_right.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/elf_down.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/elf_left.png"),
             ]
             self.elf_images = [
                 pygame.transform.scale(pygame.image.load(f_name), self.cell_size)
                 for f_name in hikers
             ]
         if self.start_img is None:
-            file_name = path.join(path.dirname(__file__), "img/stool.png")
+            file_name = path.join(path.dirname(__file__), "../imgs/custom_cliff/stool.png")
             self.start_img = pygame.transform.scale(
                 pygame.image.load(file_name), self.cell_size
             )
         if self.goal_img is None:
-            file_name = path.join(path.dirname(__file__), "img/cookie.png")
+            file_name = path.join(path.dirname(__file__), "../imgs/custom_cliff/cookie.png")
             self.goal_img = pygame.transform.scale(
                 pygame.image.load(file_name), self.cell_size
             )
         if self.mountain_bg_img is None:
             bg_imgs = [
-                path.join(path.dirname(__file__), "img/mountain_bg1.png"),
-                path.join(path.dirname(__file__), "img/mountain_bg2.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/mountain_bg1.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/mountain_bg2.png"),
             ]
             self.mountain_bg_img = [
                 pygame.transform.scale(pygame.image.load(f_name), self.cell_size)
@@ -283,15 +295,15 @@ class CliffWalkingEnv(Env):
             ]
         if self.near_cliff_img is None:
             near_cliff_imgs = [
-                path.join(path.dirname(__file__), "img/mountain_near-cliff1.png"),
-                path.join(path.dirname(__file__), "img/mountain_near-cliff2.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/mountain_near-cliff1.png"),
+                path.join(path.dirname(__file__), "../imgs/custom_cliff/mountain_near-cliff2.png"),
             ]
             self.near_cliff_img = [
                 pygame.transform.scale(pygame.image.load(f_name), self.cell_size)
                 for f_name in near_cliff_imgs
             ]
         if self.cliff_img is None:
-            file_name = path.join(path.dirname(__file__), "img/mountain_cliff.png")
+            file_name = path.join(path.dirname(__file__), "../imgs/custom_cliff/mountain_cliff.png")
             self.cliff_img = pygame.transform.scale(
                 pygame.image.load(file_name), self.cell_size
             )

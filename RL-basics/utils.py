@@ -5,6 +5,7 @@ from IPython.display import HTML, display
 import numpy as np
 import gymnasium as gym
 import random
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from abc import ABC, abstractmethod
@@ -20,7 +21,7 @@ LEFT  = 3
 def setup():
     register(
         id="CliffWalking-RLSS-v0",
-        entry_point="envs.CustomCliff:CliffWalkingEnv",
+        entry_point="envs.custom_cliff:CliffWalkingEnv",
     )
 
 def animate_frames(frames, interval=200):
