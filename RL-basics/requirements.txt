@@ -3,4 +3,6 @@ matplotlib
 ipython
 numpy
 jupyter
+seaborn
 tqdm
+Pillow

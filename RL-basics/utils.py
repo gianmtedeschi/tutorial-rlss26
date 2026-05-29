@@ -9,6 +9,10 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from abc import ABC, abstractmethod
+import seaborn as sns
+from PIL import Image
+import urllib.request
+from io import BytesIO
 
 random.seed(1)
 np.random.seed(1)
@@ -81,4 +85,82 @@ def plot_cumulative_reward(mean_cumulative_rewards: list, margin_of_error: list)
     plt.title('Agent Performance Over Time (with 95% CI)')
     plt.legend(loc='best')
     plt.grid(True, linestyle='--', alpha=0.7)
+    plt.show()
+
+def plot_gridworld_values(V, gif_path=None, title="Value Function Estimation", cbar_label="Estimated Value V(s)"):
+    """
+    Plots the estimated Value function for a Gridworld where V is a 2D numpy array.
+    Overlays the heatmap on a static frame from a given GIF, enforcing the image's native aspect ratio.
+    """
+    num_rows, num_cols = V.shape
+    
+    annot_grid = np.empty((num_rows, num_cols), dtype=object)
+    for r in range(num_rows):
+        for c in range(num_cols):
+            val = V[r, c]
+            if np.isnan(val) or np.isinf(val):
+                annot_grid[r, c] = ""
+            else:
+                annot_grid[r, c] = f"{val:.1f}"
+                
+    # --- 1. LOAD BACKGROUND FIRST TO EXTRACT DIMENSIONS ---
+    img = None
+    heatmap_alpha = 1.0
+    
+    if gif_path:
+        try:
+            if gif_path.startswith('http://') or gif_path.startswith('https://'):
+                req = urllib.request.Request(gif_path, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req) as response:
+                    img_data = response.read()
+                img = Image.open(BytesIO(img_data)).convert("RGB")
+            else:
+                img = Image.open(gif_path).convert("RGB")
+            heatmap_alpha = 0.7
+        except Exception as e:
+            print(f"Warning: Could not load background image from {gif_path}. Error: {e}")
+
+    # --- 2. CALCULATE DYNAMIC SIZE & TRUE ASPECT RATIO ---
+    target_aspect = 'auto'
+    
+    if img:
+        img_width, img_height = img.size
+        
+        # Calculate the exact aspect parameter to preserve the image's native proportions
+        # Matplotlib aspect = (physical_height / physical_width) * (data_width / data_height)
+        target_aspect = (img_height / img_width) * (num_cols / num_rows)
+        
+        # Adjust figure size to roughly match the image aspect (adding 20% width for the colorbar)
+        base_width = max(8, num_cols * 1.0)
+        fig_height = base_width * (img_height / img_width)
+        fig_width = base_width * 1.2 
+        plt.figure(figsize=(fig_width, fig_height))
+    else:
+        plt.figure(figsize=(max(8, num_cols * 1.2), max(6, num_rows * 1.2)))
+        
+    ax = plt.gca()
+    
+    # --- 3. PLOT BACKGROUND IMAGE WITH FIXED ASPECT ---
+    if img:
+        # Pass the calculated aspect ratio so the image doesn't distort
+        ax.imshow(img, extent=[0, num_cols, num_rows, 0], aspect=target_aspect, zorder=0)
+
+    # --- 4. PLOT HEATMAP ---
+    cmap = "magma" 
+    sns.heatmap(V, annot=annot_grid, fmt="", cmap=cmap, 
+                cbar_kws={'label': cbar_label}, 
+                linewidths=1, linecolor='gray',
+                alpha=heatmap_alpha, zorder=1, ax=ax)
+    
+    # Enforce the aspect ratio on the axes just in case seaborn tries to reset it
+    if img:
+        ax.set_aspect(target_aspect)
+        
+    ax.set_title(title, fontsize=14, pad=15)
+    
+    # Hide the standard coordinate tick marks
+    ax.set_xticks([])
+    ax.set_yticks([])
+    
+    plt.tight_layout()
     plt.show()

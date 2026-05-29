@@ -15,7 +15,7 @@ RIGHT = 1
 DOWN = 2
 LEFT = 3
 
-POSITION_MAPPING = {UP: [-1, 0], RIGHT: [0, 1], DOWN: [1, 0], LEFT: [0, -1]}
+POSITION_MAPPING = {UP: (-1, 0), RIGHT: (0, 1), DOWN: (1, 0), LEFT: (0, -1)}
 
 class CliffWalkingEnv(Env):
     """
@@ -53,22 +53,21 @@ class CliffWalkingEnv(Env):
     the goal as the latter results in the end of the episode. What remains are all
     the positions of the first 3 rows plus the bottom-left cell.
 
-    The observation is a value representing the player's current position as
-    current_row * ncols + current_col (where both the row and col start at 0).
+    The observation is a tuple (row, col) representing the player's current position.
 
-    For example, the starting position can be calculated as follows: 3 * 12 + 0 = 36.
+    For example, the starting position is (3, 0).
 
-    The observation is returned as an `int()`.
+    The observation is returned as a `tuple[int, int]`.
 
     ## Starting State
-    The episode starts with the player in state `[36]` (location [3, 0]).
+    The episode starts with the player in state `(3, 0)`.
 
     ## Reward
     Each time step incurs -1 reward, unless the player stepped into the cliff,
     which incurs -100 reward.
 
     ## Episode End
-    The episode terminates when the player enters state `[47]` (location [3, 11]).
+    The episode terminates when the player enters state `(3, 11)`.
 
     ## Information
 
@@ -85,8 +84,8 @@ class CliffWalkingEnv(Env):
     ```
 
     ## References
-    <a id="cliffwalk_ref"></a>[1] R. Sutton and A. Barto, “Reinforcement Learning:
-    An Introduction” 2020. [Online]. Available: [http://www.incompleteideas.net/book/RLbook2020.pdf](http://www.incompleteideas.net/book/RLbook2020.pdf)
+    <a id="cliffwalk_ref"></a>[1] R. Sutton and A. Barto, "Reinforcement Learning:
+    An Introduction" 2020. [Online]. Available: [http://www.incompleteideas.net/book/RLbook2020.pdf](http://www.incompleteideas.net/book/RLbook2020.pdf)
 
     ## Version History
     - v1: Add slippery version of cliffwalking
@@ -131,9 +130,12 @@ class CliffWalkingEnv(Env):
         for i in range(1, 12):
             self.initial_state_distrib[np.ravel_multi_index((3, i), self.shape)] = 0.
 
-        # self.observation_space = spaces.Discrete(self.nS)
         self.action_space = spaces.Discrete(self.nA)
-        self.observation_space = spaces.Box(shape=(2,), low=np.array([0, 0], dtype=np.int32), high=np.array([3, 11], dtype=np.int32), dtype=np.int32)
+        # Observation space is now a Tuple of two Discrete spaces: (row, col)
+        self.observation_space = spaces.Tuple((
+            spaces.Discrete(self.shape[0]),
+            spaces.Discrete(self.shape[1]),
+        ))
 
         self.render_mode = render_mode
 
@@ -153,26 +155,24 @@ class CliffWalkingEnv(Env):
         self.near_cliff_img = None
         self.tree_img = None
 
-    def _limit_coordinates(self, coord: np.ndarray) -> np.ndarray:
+    def _limit_coordinates(self, coord: tuple[int, int]) -> tuple[int, int]:
         """Prevent the agent from falling out of the grid world."""
-        coord[0] = min(coord[0], self.shape[0] - 1)
-        coord[0] = max(coord[0], 0)
-        coord[1] = min(coord[1], self.shape[1] - 1)
-        coord[1] = max(coord[1], 0)
-        return coord
+        row = min(max(coord[0], 0), self.shape[0] - 1)
+        col = min(max(coord[1], 0), self.shape[1] - 1)
+        return (row, col)
 
-    def _state_to_xy(self, s: int) -> np.ndarray:
-        col, row = np.unravel_index(s, self.shape)
-        return np.array([col, row], dtype=np.int32)
+    def _state_to_xy(self, s: int) -> tuple[int, int]:
+        row, col = np.unravel_index(s, self.shape)
+        return (int(row), int(col))
 
     def _calculate_transition_prob(
-        self, current: list[int] | np.ndarray, move: int
+        self, current: tuple[int, int] | np.ndarray, move: int
     ) -> list[tuple[float, Any, int, bool]]:
         """Determine the outcome for an action. Transition Prob is always 1.0.
 
         Args:
             current: Current position on the grid as (row, col)
-            delta: Change in position for transition
+            move: The action to take
 
         Returns:
             Tuple of ``(transition_probability, new_state, reward, terminated)``
@@ -187,14 +187,14 @@ class CliffWalkingEnv(Env):
             ]
         outcomes = []
         for delta in deltas:
-            new_position = np.array(current) + np.array(delta)
-            new_position = self._limit_coordinates(new_position).astype(int)
-            new_state = np.ravel_multi_index(tuple(new_position), self.shape)
-            if self._cliff[tuple(new_position)]:
+            new_position = (int(current[0]) + delta[0], int(current[1]) + delta[1])
+            new_position = self._limit_coordinates(new_position)
+            new_state = np.ravel_multi_index(new_position, self.shape)
+            if self._cliff[new_position]:
                 outcomes.append((1 / len(deltas), self.start_state_index, -100, False))
             else:
                 terminal_state = (self.shape[0] - 1, self.shape[1] - 1)
-                is_terminated = tuple(new_position) == terminal_state
+                is_terminated = new_position == terminal_state
                 outcomes.append((1 / len(deltas), new_state, -1, is_terminated))
         return outcomes
 

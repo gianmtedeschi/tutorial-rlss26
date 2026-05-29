@@ -19,33 +19,24 @@ class CliffWalkingEnv(Env):
             for c in range(self.COLS)
             if (r, c) not in self.CLIFF and (r, c) != self.GOAL
         ]
-        # Sample uniformly the initial state
-        state = valid_states[np.random.randint(len(valid_states))]
-        self.state = np.array(state, dtype=np.int32)
-        # Count the number of interactions
+        self.state = valid_states[np.random.randint(len(valid_states))]
         self.interactions = 0
         return self.state, {}
 
     def step(self, action: int):
-        # If possible perform the action
-        if action == UP and self.state[0] > 0:
-            self.state = self.state + np.array([-1, 0], dtype=np.int32)
-        elif action == RIGHT and self.state[1] < self.COLS - 1:
-            self.state = self.state + np.array([0, 1], dtype=np.int32)
-        elif action == DOWN and self.state[0] < self.ROWS - 1:
-            self.state = self.state + np.array([1, 0], dtype=np.int32)
-        elif action == LEFT and self.state[1] > 0:
-            self.state = self.state + np.array([0, -1], dtype=np.int32)
+        r, c = self.state
+        if   action == UP    and r > 0:            self.state = (r - 1, c)
+        elif action == RIGHT and c < self.COLS - 1: self.state = (r, c + 1)
+        elif action == DOWN  and r < self.ROWS - 1: self.state = (r + 1, c)
+        elif action == LEFT  and c > 0:             self.state = (r, c - 1)
 
         self.interactions += 1
 
-        terminated = True if tuple(self.state) == self.GOAL else False
-        truncated = self.interactions >= 50
+        terminated = self.state == self.GOAL
+        truncated  = self.interactions >= 50
+        reward     = -100 if self.state in self.CLIFF else -1
 
-        reward = -100 if tuple(self.state) in self.CLIFF else -1
-
-        # When the agent falls off the cliff, terminate the episode
         if reward == -100:
-           terminated = True
+            terminated = True
 
         return self.state, reward, terminated, truncated, {}
