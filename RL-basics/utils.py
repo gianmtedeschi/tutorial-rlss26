@@ -13,6 +13,7 @@ import seaborn as sns
 from PIL import Image
 import urllib.request
 from io import BytesIO
+from IPython.display import clear_output
 
 random.seed(1)
 np.random.seed(1)
@@ -161,6 +162,26 @@ def plot_gridworld_values(V, gif_path=None, title="Value Function Estimation", c
     # Hide the standard coordinate tick marks
     ax.set_xticks([])
     ax.set_yticks([])
+    
+    plt.tight_layout()
+    plt.show()
+
+def plot_training_results(alg_name, mean_returns, confidence_intervals, eval_every=20):
+    sns.set_theme(style="darkgrid")
+    episodes = np.arange(1, len(mean_returns) + 1) * eval_every
+    means = np.array(mean_returns)
+    cis = np.array(confidence_intervals)
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(episodes, means, label="Average Cumulative Return", color="#2c7bb6", linewidth=2)
+    
+    # Updated label to reflect the 95% Confidence Interval
+    plt.fill_between(episodes, means - cis, means + cis, color="#2c7bb6", alpha=0.2, label="95% Confidence Interval")
+    
+    plt.xlabel("Episode", fontsize=12)
+    plt.ylabel("Average Cumulative Return", fontsize=12)
+    plt.title(f"{alg_name} Training Performance", fontsize=14, fontweight="bold")
+    plt.legend(loc="lower right", fontsize=11)
     
     plt.tight_layout()
     plt.show()
