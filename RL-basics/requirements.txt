@@ -1,0 +1,8 @@
+gymnasium[toy-text]
+matplotlib
+ipython
+numpy
+jupyter
+seaborn
+tqdm
+Pillow
