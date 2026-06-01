@@ -15,13 +15,14 @@ import urllib.request
 from io import BytesIO
 from IPython.display import clear_output
 
-random.seed(1)
-np.random.seed(1)
-
 UP    = 0
 RIGHT = 1
 DOWN  = 2
 LEFT  = 3
+
+def seed_everything(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
 
 def setup():
     register(

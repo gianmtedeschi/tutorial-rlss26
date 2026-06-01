@@ -7,7 +7,6 @@ import numpy as np
 
 import gymnasium as gym
 from gymnasium import Env, spaces
-from gymnasium.envs.toy_text.utils import categorical_sample
 from gymnasium.error import DependencyNotInstalled
 
 UP = 0
@@ -20,77 +19,6 @@ POSITION_MAPPING = {UP: (-1, 0), RIGHT: (0, 1), DOWN: (1, 0), LEFT: (0, -1)}
 class CliffWalkingEnv(Env):
     """
     Cliff walking involves crossing a gridworld from start to goal while avoiding falling off a cliff.
-
-    ## Description
-    The game starts with the player at location [3, 0] of the 4x12 grid world with the
-    goal located at [3, 11]. If the player reaches the goal the episode ends.
-
-    A cliff runs along [3, 1..10]. If the player moves to a cliff location it
-    returns to the start location.
-
-    The player makes moves until they reach the goal.
-
-    Adapted from Example 6.6 (page 132) from Reinforcement Learning: An Introduction
-    by Sutton and Barto [<a href="#cliffwalk_ref">1</a>].
-
-    The cliff can be chosen to be slippery (disabled by default) so the player may move perpendicular
-    to the intended direction sometimes (see <a href="#is_slippy">`is_slippery`</a>).
-
-    With inspiration from:
-    [https://github.com/dennybritz/reinforcement-learning/blob/master/lib/envs/cliff_walking.py](https://github.com/dennybritz/reinforcement-learning/blob/master/lib/envs/cliff_walking.py)
-
-    ## Action Space
-    The action shape is `(1,)` in the range `{0, 3}` indicating
-    which direction to move the player.
-
-    - 0: Move up
-    - 1: Move right
-    - 2: Move down
-    - 3: Move left
-
-    ## Observation Space
-    There are 3 x 12 + 1 possible states. The player cannot be at the cliff, nor at
-    the goal as the latter results in the end of the episode. What remains are all
-    the positions of the first 3 rows plus the bottom-left cell.
-
-    The observation is a tuple (row, col) representing the player's current position.
-
-    For example, the starting position is (3, 0).
-
-    The observation is returned as a `tuple[int, int]`.
-
-    ## Starting State
-    The episode starts with the player in state `(3, 0)`.
-
-    ## Reward
-    Each time step incurs -1 reward, unless the player stepped into the cliff,
-    which incurs -100 reward.
-
-    ## Episode End
-    The episode terminates when the player enters state `(3, 11)`.
-
-    ## Information
-
-    `step()` and `reset()` return a dict with the following keys:
-    - "p" - transition proability for the state.
-
-    As cliff walking is not stochastic, the transition probability returned always 1.0.
-
-    ## Arguments
-
-    ```python
-    import gymnasium as gym
-    gym.make('CliffWalking-v1')
-    ```
-
-    ## References
-    <a id="cliffwalk_ref"></a>[1] R. Sutton and A. Barto, "Reinforcement Learning:
-    An Introduction" 2020. [Online]. Available: [http://www.incompleteideas.net/book/RLbook2020.pdf](http://www.incompleteideas.net/book/RLbook2020.pdf)
-
-    ## Version History
-    - v1: Add slippery version of cliffwalking
-    - v0: Initial version release
-
     """
 
     metadata = {
@@ -121,17 +49,11 @@ class CliffWalkingEnv(Env):
             self.P[s][DOWN] = self._calculate_transition_prob(position, DOWN)
             self.P[s][LEFT] = self._calculate_transition_prob(position, LEFT)
 
-        # Calculate initial state distribution
-        # We always start in state (3, 0)
-        # self.initial_state_distrib = np.zeros(self.nS)
-        # self.initial_state_distrib[self.start_state_index] = 1.0
-
         self.initial_state_distrib = np.ones(self.nS) / 37
         for i in range(1, 12):
             self.initial_state_distrib[np.ravel_multi_index((3, i), self.shape)] = 0.
 
         self.action_space = spaces.Discrete(self.nA)
-        # Observation space is now a Tuple of two Discrete spaces: (row, col)
         self.observation_space = spaces.Tuple((
             spaces.Discrete(self.shape[0]),
             spaces.Discrete(self.shape[1]),
@@ -168,17 +90,6 @@ class CliffWalkingEnv(Env):
     def _calculate_transition_prob(
         self, current: tuple[int, int] | np.ndarray, move: int
     ) -> list[tuple[float, Any, int, bool]]:
-        """Determine the outcome for an action. Transition Prob is always 1.0.
-
-        Args:
-            current: Current position on the grid as (row, col)
-            move: The action to take
-
-        Returns:
-            Tuple of ``(transition_probability, new_state, reward, terminated)``
-            where `transition_probability` is 1 if the environment is not slippery, otherwise 1/3 for `move`
-            and the perpendicular moves.
-        """
         if not self.is_slippery:
             deltas = [POSITION_MAPPING[move]]
         else:
@@ -200,11 +111,18 @@ class CliffWalkingEnv(Env):
 
     def step(self, a):
         transitions = self.P[self.s][a]
-        i = categorical_sample([t[0] for t in transitions], self.np_random)
+        
+        # Replaced categorical_sample with global np.random.choice
+        probs = [t[0] for t in transitions]
+        
+        # Normalize probabilities in case of minor floating point rounding issues
+        probs = np.array(probs) / np.sum(probs) 
+        
+        i = np.random.choice(len(transitions), p=probs)
         p, s, r, t = transitions[i]
+        
         self.s = s
         self.lastaction = a
-
         self.counter += 1
         truncated = True if self.counter >= 50 else False
 
@@ -213,21 +131,27 @@ class CliffWalkingEnv(Env):
 
         if self.render_mode == "human":
             self.render()
-        # truncation=False as the time limit is handled by the `TimeLimit` wrapper added during `make`
+        
         return self._state_to_xy(int(s)), r, t, truncated, {"prob": p}
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
-        self.s = categorical_sample(self.initial_state_distrib, self.np_random)
+        
+        # Sync the global numpy seed if one is passed explicitly into reset()
+        if seed is not None:
+            np.random.seed(seed)
+
+        # Replaced categorical_sample with global np.random.choice
+        norm_distrib = np.array(self.initial_state_distrib) / np.sum(self.initial_state_distrib)
+        self.s = np.random.choice(len(self.initial_state_distrib), p=norm_distrib)
 
         self.start_state_index = self.s
-
         self.lastaction = None
-
         self.counter = 0
 
         if self.render_mode == "human":
             self.render()
+            
         return self._state_to_xy(int(self.s)), {"prob": 1}
 
     def render(self):
@@ -369,7 +293,3 @@ class CliffWalkingEnv(Env):
 
             pygame.display.quit()
             pygame.quit()
-
-
-# Elf and stool from https://franuka.itch.io/rpg-snow-tileset
-# All other assets by ____
