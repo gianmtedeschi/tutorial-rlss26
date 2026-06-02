@@ -29,6 +29,5 @@ Choose a tutorial from the table below and click the badge to launch it.
 
 - `/RL-basics/` - Notebooks for introductory concepts and tabular methods.
 - `/policy-gradient/` - Notebooks covering advanced gradient-based methods.
-- `/img/` - Visual assets used to render the custom Gym environments inline.
 
 ---
