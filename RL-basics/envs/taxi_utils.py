@@ -20,8 +20,19 @@ MAP = [
 ]
 
 WINDOW_SIZE = (550 * 1.5, 350 * 1.5)
-LOCS_COLORS = [(255, 0, 0), (0, 255, 0), (255, 255, 0), (0, 0, 255)]
 LOCS = [(0, 0), (0, 4), (4, 0), (4, 3)]
+
+# --- TWEAK YOUR MILAN LANDMARKS HERE ---
+# Format: (Scale Factor, X_Offset, Y_Offset)
+# Scale > 1.0 makes it bigger, < 1.0 makes it smaller.
+# X_Offset: positive = right, negative = left
+# Y_Offset: positive = down, negative = up
+LANDMARK_TWEAKS = [
+    (1.2, 0, -50),   # [0] Politecnico
+    (1.5, 0, -50),    # [1] Duomo
+    (1.5, 0, 10), # [2] Castello
+    (2, 0, 10)     # [3] San Siro
+]
 
 # ---------------------------------------------------------------------------
 # External Render Cache and Helpers
@@ -31,17 +42,18 @@ _RENDER_CACHE = {
     "assets_loaded": False,
     "taxi_imgs": None,
     "passenger_img": None,
-    "destination_img": None,
     "median_horiz": None,
     "median_vert": None,
     "background_img": None,
+    "loc_imgs": None, # Stores the 4 Milan landmarks
     "taxi_orientation": 0,
 }
 
 def _get_surf_loc(map_loc, cell_size):
+    """Maps internal grid coordinates to PyGame screen pixel coordinates."""
     return ((map_loc[1] * 2 + 1) * cell_size[0], (map_loc[0] + 1) * cell_size[1])
 
-def render_taxi_frame(state, desc, lastaction, window_size, locs, locs_colors):
+def render_taxi_frame(state, desc, lastaction, window_size, locs):
     try:
         import pygame
     except ImportError as e:
@@ -49,7 +61,7 @@ def render_taxi_frame(state, desc, lastaction, window_size, locs, locs_colors):
 
     if _RENDER_CACHE["window"] is None:
         pygame.init()
-        pygame.display.set_caption("Taxi")
+        pygame.display.set_caption("Taxi - Milan Edition")
         _RENDER_CACHE["window"] = pygame.Surface(window_size)
 
     window = _RENDER_CACHE["window"]
@@ -61,14 +73,27 @@ def render_taxi_frame(state, desc, lastaction, window_size, locs, locs_colors):
 
         _RENDER_CACHE["taxi_imgs"] = [load(n) for n in ("cab_front.png", "cab_rear.png", "cab_right.png", "cab_left.png")]
         _RENDER_CACHE["passenger_img"] = load("passenger.png")
-        dest = load("uni.png")
-        dest.set_alpha(170)
-        _RENDER_CACHE["destination_img"] = dest
+        _RENDER_CACHE["background_img"] = load("taxi_background.png")
+        
         _RENDER_CACHE["median_horiz"] = [load(n) for n in ("gridworld_median_left.png", "gridworld_median_horiz.png", "gridworld_median_right.png")]
         _RENDER_CACHE["median_vert"] = [load(n) for n in ("gridworld_median_top.png", "gridworld_median_vert.png", "gridworld_median_bottom.png")]
-        _RENDER_CACHE["background_img"] = load("taxi_background.png")
+        
+        # --- NEW CUSTOM LOADING FOR LANDMARKS ---
+        raw_loc_names = ["polimi_pixel.png", "duomo_pixel.png", "castello_pixel.png", "sansiro_pixel.png"]
+        _RENDER_CACHE["loc_imgs"] = []
+        
+        for i, name in enumerate(raw_loc_names):
+            scale_factor = LANDMARK_TWEAKS[i][0]
+            raw_img = pygame.image.load(path.join(here, name))
+            
+            # Scale the image based on the cell size AND the custom tweak factor
+            new_size = (int(cell_size[0] * scale_factor), int(cell_size[1] * scale_factor))
+            scaled_img = pygame.transform.scale(raw_img, new_size)
+            _RENDER_CACHE["loc_imgs"].append(scaled_img)
+            
         _RENDER_CACHE["assets_loaded"] = True
 
+    # 1. Draw Background and Grid Medians
     for y in range(desc.shape[0]):
         for x in range(desc.shape[1]):
             cell = (x * cell_size[0], y * cell_size[1])
@@ -83,15 +108,24 @@ def render_taxi_frame(state, desc, lastaction, window_size, locs, locs_colors):
                 elif x == desc.shape[1] - 1 or desc[y][x + 1] != b"-": window.blit(_RENDER_CACHE["median_horiz"][2], cell)
                 else: window.blit(_RENDER_CACHE["median_horiz"][1], cell)
 
-    for loc_cell, color in zip(locs, locs_colors):
-        color_cell = pygame.Surface(cell_size)
-        color_cell.set_alpha(128)
-        color_cell.fill(color)
+    # 2. Draw Milan Landmarks (With custom tweaks)
+    for i, loc_cell in enumerate(locs):
         sx, sy = _get_surf_loc(loc_cell, cell_size)
-        window.blit(color_cell, (sx, sy + 10))
+        img_to_draw = _RENDER_CACHE["loc_imgs"][i]
+        
+        # Calculate how to center the image if it was scaled up or down
+        center_x_offset = (cell_size[0] - img_to_draw.get_width()) / 2
+        center_y_offset = (cell_size[1] - img_to_draw.get_height()) / 2
+        
+        # Apply the user's manual X and Y offsets
+        final_x = sx + center_x_offset + LANDMARK_TWEAKS[i][1]
+        final_y = sy + center_y_offset + LANDMARK_TWEAKS[i][2]
+        
+        window.blit(img_to_draw, (final_x, final_y))
 
+    # 3. Draw Passenger and Taxi
     taxi_row, taxi_col = state["row"], state["col"]
-    pass_idx, dest_idx = state["pass_idx"], state["dest_idx"]
+    pass_idx = state["pass_idx"]
 
     if pass_idx < 4:
         window.blit(_RENDER_CACHE["passenger_img"], _get_surf_loc(locs[pass_idx], cell_size))
@@ -100,19 +134,9 @@ def render_taxi_frame(state, desc, lastaction, window_size, locs, locs_colors):
         _RENDER_CACHE["taxi_orientation"] = lastaction
 
     taxi_location = _get_surf_loc((taxi_row, taxi_col), cell_size)
-    dest_loc = _get_surf_loc(locs[dest_idx], cell_size) if dest_idx < 4 else None
     taxi_img_to_draw = _RENDER_CACHE["taxi_imgs"][_RENDER_CACHE["taxi_orientation"]]
 
-    if dest_loc is None:
-        window.blit(taxi_img_to_draw, taxi_location)
-    else:
-        dest_y_adjusted = dest_loc[1] - cell_size[1] // 2
-        if dest_loc[1] <= taxi_location[1]:
-            window.blit(_RENDER_CACHE["destination_img"], (dest_loc[0], dest_y_adjusted))
-            window.blit(taxi_img_to_draw, taxi_location)
-        else:
-            window.blit(taxi_img_to_draw, taxi_location)
-            window.blit(_RENDER_CACHE["destination_img"], (dest_loc[0], dest_y_adjusted))
+    window.blit(taxi_img_to_draw, taxi_location)
 
     return np.transpose(np.array(pygame.surfarray.pixels3d(window)), axes=(1, 0, 2))
 
@@ -148,5 +172,5 @@ def render_taxi(state, lastaction):
     
     return render_taxi_frame(
         state=render_state_dict, desc=np.asarray(MAP, dtype="c"), lastaction=mapped_lastaction,
-        window_size=WINDOW_SIZE, locs=LOCS, locs_colors=LOCS_COLORS
+        window_size=WINDOW_SIZE, locs=LOCS
     )
