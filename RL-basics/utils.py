@@ -14,6 +14,10 @@ from PIL import Image
 import urllib.request
 from io import BytesIO
 from IPython.display import clear_output
+from gymnasium import spaces
+
+# We import the rendering logic and constants from our hidden black box
+from envs.taxi_utils import render_taxi, close_taxi_render
 
 UP    = 0
 RIGHT = 1
