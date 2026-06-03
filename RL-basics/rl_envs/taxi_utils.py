@@ -19,7 +19,7 @@ MAP = [
     "+---------+",
 ]
 
-WINDOW_SIZE = (550 * 1.5, 350 * 1.5)
+WINDOW_SIZE = (550, 350)
 LOCS = [(0, 0), (0, 4), (4, 0), (4, 3)]
 
 # --- TWEAK YOUR MILAN LANDMARKS HERE ---
