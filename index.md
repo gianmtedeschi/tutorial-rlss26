@@ -19,7 +19,7 @@ Choose a tutorial from the table below and click the badge to launch it.
 | 📚 Tutorial Module  | 📝 Description                                                        | 💻 Interactive Link                                                                                                                                                                                           |
 | :------------------ | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Basics of RL I**  | Tabular RL and Gymnasium API.                                       | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gianmtedeschi/tutorial-rlss26/blob/main/RL-basics/RL01_Intro_to_RL.ipynb)      |
-| **Basics of RL II** | Policy Gradient Algorithms. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gianmtedeschi/tutorial-rlss26/blob/main/policy-gradient/RL02__Policy_gradient_methods.ipynb) |
+| **Basics of RL II** | Policy Gradient Algorithms. | See you on friday 😉 |
 
 ---
 
