@@ -1,6 +1,3 @@
-# 🎓 Reinforcement Learning Summer School (RLSS) 2026
-
-**Politecnico di Milano | June 3rd - 12th, 2026**
 
 Welcome to the official tutorial repository for the Reinforcement Learning Basics Session I and II @ Reinforcement Learning Summer School 2026!
 
@@ -31,10 +28,5 @@ Choose a tutorial from the table below and click the badge to launch it.
 1. **Open the notebook:** Click the "Open in Colab" badge next to the tutorial you want to work on.
 2. **Save a copy:** The notebook will open in a temporary sandbox. To save your progress and execute the code, click **`File > Save a copy in Drive`**.
 3. **Run the code:** You can now edit the code, train your agents, and run the visualization cells in your personal copy.
-
-## 📁 Repository Structure
-
-- `/RL-basics/` - Notebooks for introductory concepts and tabular methods.
-- `/policy-gradient/` - Notebooks covering advanced gradient-based methods.
 
 ---
