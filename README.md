@@ -32,9 +32,4 @@ Choose a tutorial from the table below and click the badge to launch it.
 2. **Save a copy:** The notebook will open in a temporary sandbox. To save your progress and execute the code, click **`File > Save a copy in Drive`**.
 3. **Run the code:** You can now edit the code, train your agents, and run the visualization cells in your personal copy.
 
-## 📁 Repository Structure
-
-- `/RL-basics/` - Notebooks for introductory concepts and tabular methods.
-- `/policy-gradient/` - Notebooks covering advanced gradient-based methods.
-
 ---
