@@ -31,7 +31,7 @@ def seed_everything(seed: int):
 def setup():
     register(
         id="CliffWalking-RLSS-v0",
-        entry_point="envs.custom_cliff:CliffWalkingEnv",
+        entry_point="rl_envs.custom_cliff:CliffWalkingEnv",
     )
 
 def animate_frames(frames, interval=200):
