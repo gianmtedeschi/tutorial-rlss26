@@ -2,20 +2,27 @@
 
 **Politecnico di Milano | June 3rd - 12th, 2026**
 
-Welcome to the official tutorial repository for the Reinforcement Learning Summer School hosted by Politecnico di Milano!
+Welcome to the official tutorial repository for the Reinforcement Learning Basics Session I and II @ Reinforcement Learning Summer School 2026!
 
-This repository contains all the practical coding tutorials we will be using throughout the event.
+This repository contains all the practical coding tutorials we will be using throughout the sessions.
 
 ## 🚀 Interactive Tutorials
 
-You don't need to install anything on your local machine to participate. All tutorials are designed to run directly in the cloud using Google Colab.
+You don't need to install anything on your local machine to participate. All tutorials are designed to run directly in the cloud using Google Colab. 
+Alternatively, if you prefer to work locally, you can download the notebooks and set up the required environment as:
+
+```bash
+conda create -n rlss2026-basics python=3.11
+conda activate rlss2026-basics
+pip install -r requirements.txt
+```
 
 Choose a tutorial from the table below and click the badge to launch it.
 
 | 📚 Tutorial Module  | 📝 Description                                                        | 💻 Interactive Link                                                                                                                                                                                           |
 | :------------------ | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Basics of RL I**  | Tabular MDPs and Gymnasium API.                                       | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gianmtedeschi/tutorial-rlss26/blob/main/RL-basics/RL01_Intro_to_RL_solution.ipynb)      |
-| **Basics of RL II** | Dive into deep reinforcement learning and Policy Gradient algorithms. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gianmtedeschi/tutorial-rlss26/blob/main/policy-gradient/Policy_Gradient_Tutorial.ipynb) |
+| **Basics of RL I**  | Tabular RL and Gymnasium API.                                       | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gianmtedeschi/tutorial-rlss26/blob/main/RL-basics/RL01_Intro_to_RL_solution.ipynb)      |
+| **Basics of RL II** | Policy Gradient Algorithms. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gianmtedeschi/tutorial-rlss26/blob/main/policy-gradient/Policy_Gradient_Tutorial.ipynb) |
 
 ---
 
