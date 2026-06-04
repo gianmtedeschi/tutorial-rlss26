@@ -55,7 +55,6 @@ def evaluate(env, policy, T, gamma=1., num_episodes=10):
     :param num_episodes: how many episodes to average over.
     :return: the mean return and its standard error across the episodes.
     """
-    gamma = 1
     all_episode_rewards = []
     for _ in range(num_episodes):
         episode_rewards = []
